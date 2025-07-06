@@ -33,6 +33,21 @@ const taskSchema = new mongoose.Schema({
     type: String, 
     default: '' 
   },
+  recurrence: {
+    type: {
+      type: String,
+      enum: ['none', 'daily', 'weekly', 'monthly'],
+      default: 'none'
+    },
+    days: {
+      type: [Number], // 0=Sunday, 6=Saturday
+      default: undefined
+    },
+    date: {
+      type: Number, // 1-31 for monthly
+      default: undefined
+    }
+  },
 }, { timestamps: true });
 
 // Update completedAt when completed status changes
