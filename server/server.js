@@ -21,7 +21,7 @@ const app = express();
 // MIDDLEWARES
 app.use(express.json());
 app.use(cors({
-  origin: 'https://focuswin-frontend.onrender.com',
+  origin: 'http://localhost:3000',
   credentials: true
 }));
 
