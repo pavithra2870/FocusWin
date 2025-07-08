@@ -6,7 +6,7 @@ const MongoStore = require('connect-mongo');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const cron = require('node-cron');
-const PORT = process.env.PORT || 5000;
+
 const User = require('./models/User');
 const Task = require('./models/Task');
 const { router: authRouter } = require('./routes/auth');
@@ -15,7 +15,7 @@ const groupsRouter = require('./routes/groups');
 const notificationsRouter = require('./routes/notifications');
 
 dotenv.config();
-
+const PORT = process.env.PORT || 5000;
 const app = express();
 
 // MIDDLEWARES
@@ -43,9 +43,9 @@ app.use(session({
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log('🚀 Server started on port');
-    });
+   app.listen(PORT, () => {
+  console.log(`🚀 Server started on port ${PORT}`);
+});
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
