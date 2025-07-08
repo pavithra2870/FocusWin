@@ -25,19 +25,6 @@ app.use(cors({
   credentials: true
 }));
 
-// SESSION SETUP
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'defaultsecret',
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24,
-    httpOnly: false,
-    secure: false,
-    sameSite: 'none'
-  }
-}));
 
 // MONGODB CONNECTION
 mongoose.connect(process.env.MONGO_URI)
@@ -58,9 +45,18 @@ app.use('/api/groups', groupsRouter);
 app.use('/api/notifications', notificationsRouter);
 
 // AUTH CHECK MIDDLEWARE
-const requireAuth = (req, res, next) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: 'Unauthorized' });
+const requireAuth = async (req, res, next) => {
+  const { userId } = req.headers;
+
+  if (!userId) {
+    return res.status(401).json({ error: 'No userId provided' });
   }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(401).json({ error: 'Invalid user' });
+  }
+
+  req.user = user;
   next();
 };
