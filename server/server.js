@@ -6,7 +6,7 @@ const MongoStore = require('connect-mongo');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const cron = require('node-cron');
-
+const PORT = process.env.PORT || 5000;
 const User = require('./models/User');
 const Task = require('./models/Task');
 const { router: authRouter } = require('./routes/auth');
@@ -43,8 +43,8 @@ app.use(session({
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB');
-    app.listen(5000, () => {
-      console.log('🚀 Server started on port 5000');
+    app.listen(PORT, () => {
+      console.log('🚀 Server started on port');
     });
   })
   .catch((err) => {
