@@ -1,7 +1,6 @@
 // routes/auth.js
 const express = require('express');
 const User = require('../models/User');
-const bcrypt = require('bcrypt');
 
 const router = express.Router();
 
@@ -35,8 +34,7 @@ router.post('/signup', async (req, res) => {
     if (await User.findOne({ email })) {
       return res.status(409).json({ error: 'A user with this email already exists' });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword });
+    const user = new User({ name, email, password });
     await user.save();
     res.status(201).json({ id: user._id, name: user.name, email: user.email });
   } catch (err) {
@@ -56,8 +54,7 @@ router.post('/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
+    if (user.password !== password) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
     res.status(200).json({ id: user._id, name: user.name, email: user.email });
