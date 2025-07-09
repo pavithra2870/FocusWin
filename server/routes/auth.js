@@ -1,6 +1,7 @@
 // routes/auth.js
 const express = require('express');
 const User = require('../models/User');
+const bcrypt = require('bcrypt');
 
 const router = express.Router();
 
@@ -26,20 +27,17 @@ const requireAuth = async (req, res, next) => {
 // POST /api/auth/signup
 router.post('/signup', async (req, res) => {
   const { email, password, name } = req.body;
-
   if (!email || !password || !name) {
     return res.status(400).json({ error: 'Name, email, and password are required' });
   }
 
   try {
-    const existing = await User.findOne({ email });
-    if (existing) {
+    if (await User.findOne({ email })) {
       return res.status(409).json({ error: 'A user with this email already exists' });
     }
-
-    const user = new User({ name, email, password });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ name, email, password: hashedPassword });
     await user.save();
-
     res.status(201).json({ id: user._id, name: user.name, email: user.email });
   } catch (err) {
     console.error(err);
@@ -50,13 +48,18 @@ router.post('/signup', async (req, res) => {
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
   try {
     const user = await User.findOne({ email });
-    if (!user || user.password !== password) {
+    if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
     res.status(200).json({ id: user._id, name: user.name, email: user.email });
   } catch (err) {
     console.error(err);
@@ -65,7 +68,6 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /api/auth/logout
-// Since we have no session or cookie, logout is just a client-side operation.
 router.post('/logout', (req, res) => {
   res.status(200).json({ message: 'Logged out successfully (client-side only)' });
 });
