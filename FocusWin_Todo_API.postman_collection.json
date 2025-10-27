@@ -1,0 +1,408 @@
+{
+  "info": {
+    "name": "FocusWin Todo API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Complete API collection for FocusWin Todo Application"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"testpass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has user data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"abc@gmail.com\",\n  \"password\": \"abcdefg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Check Auth Status (Me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.test(\"User is authenticated\", function () {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property('name');",
+                  "        pm.expect(jsonData).to.have.property('email');",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"User is not authenticated\", function () {",
+                  "        pm.response.to.have.status(401);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Get All Tasks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    pm.response.to.be.a('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "Create Task (Minimal)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Task created with ID\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('_id');",
+                  "    pm.environment.set('lastTaskId', jsonData._id);",
+                  "});",
+                  "",
+                  "pm.test(\"Task has default values\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.completed).to.be.false;",
+                  "    pm.expect(jsonData.importance).to.equal(5);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Task\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/tasks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "Create Task (Full Details)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Complete the project\",\n  \"importance\": 8,\n  \"dueDate\": \"2024-12-31\",\n  \"group\": \"Work\",\n  \"recurrence\": {\n    \"type\": \"none\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/tasks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "Create Task with Recurrence",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Daily Standup\",\n  \"importance\": 6,\n  \"dueDate\": \"2024-12-31\",\n  \"group\": \"Work\",\n  \"recurrence\": {\n    \"type\": \"weekly\",\n    \"days\": [1, 2, 3, 4, 5]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/tasks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Task Title\",\n  \"completed\": true,\n  \"importance\": 9\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{lastTaskId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "{{lastTaskId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Task is updated\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.completed).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tasks/{{lastTaskId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tasks", "{{lastTaskId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Deletion message received\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message).to.equal('Task deleted successfully');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Groups",
+      "item": [
+        {
+          "name": "Get All Groups",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/groups",
+              "host": ["{{base_url}}"],
+              "path": ["api", "groups"]
+            }
+          }
+        },
+        {
+          "name": "Create Group",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Group created with ID\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('_id');",
+                  "    pm.environment.set('lastGroupId', jsonData._id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Personal\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/groups",
+              "host": ["{{base_url}}"],
+              "path": ["api", "groups"]
+            }
+          }
+        },
+        {
+          "name": "Delete Group",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/groups/{{lastGroupId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "groups", "{{lastGroupId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Send Email Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taskId\": \"{{lastTaskId}}\",\n  \"taskTitle\": \"Complete the project\",\n  \"dueDate\": \"2024-12-31T00:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/notifications/email",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "email"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    }
+  ]
+}
+
